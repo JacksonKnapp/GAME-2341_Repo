@@ -28,6 +28,7 @@ Print result ( numOne + numTwo ) to the user
 
 End
 
+
 Pseudocode 3 - Get an unknown amount of numbers from the user and add them together, print out the result:
 
 Start
@@ -48,6 +49,7 @@ While not finished
 
 End
 
+
 Pseudocode 4 - Have the user define a maximum whole number, print out a random number between 0 and their number. Allow the user to play again or quit:
 
 Start
@@ -63,11 +65,12 @@ While not finished
 
   Print randomInt back to the user
   Print prompt to decide if the user is finihsed
-  finished = User Input (Decided if user enters Y/N, asks them if they'd like to play again)
+  finished = User Input (Decided if user enters Y/N)
 
   exit if the user is finished
 
 End
+
 
 Pseudocode 5 - Get a random number. If the number is event print "RIGHT", if it's odd, print "LEFT". Do this ten times. Print out how many times it was "LEFT" and how many times it was "RIGHT":
 
