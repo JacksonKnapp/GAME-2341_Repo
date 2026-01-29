@@ -1,1 +1,29 @@
+Pseudoecode 1 - print a user-input into all caps, print the result:
 
+Start
+
+Declare string variable called inputString
+
+inputString = User Input
+Set inputString to upper case (Ignore special characters and digits)
+
+Print capitalized inputString to the user
+
+End
+
+
+Pseudocode 2 - have a user input two numbers, add them together and print the result:
+
+Start
+
+Declare integer called numOne
+Declare integer called numTwo
+
+Print prompt for user input for numOne
+  numOne = User Input (Only numbers)
+Print prompt for user input for numTwo
+  numTwo = User Input (Only numbers)
+
+Print result ( numOne + numTwo ) to the user
+
+End
