@@ -27,3 +27,70 @@ Print prompt for user input for numTwo
 Print result ( numOne + numTwo ) to the user
 
 End
+
+Pseudocode 3 - Get an unknown amount of numbers from the user and add them together, print out the result:
+
+Start
+
+Declare double totalNum
+Declare bool finished
+
+While not finished
+  Print prompt for user to enter a number to add to the running total
+  totalNum += User Input (Only numbers)
+
+  Print new total (totalNum)
+
+  Print prompt to decide if the user is finished
+  finished = User Input (Decided if user enters Y/N)
+
+  exit if the user is finished
+
+End
+
+Pseudocode 4 - Have the user define a maximum whole number, print out a random number between 0 and their number. Allow the user to play again or quit:
+
+Start
+
+Declare integer maxNum
+Declare integer randomInt
+
+While not finished
+  Print prompt for user to enter a new max number
+  maxNum = User Input (Only numbers)
+
+  randomInt = get random integer (between 0 and maxNum)
+
+  Print randomInt back to the user
+  Print prompt to decide if the user is finihsed
+  finished = User Input (Decided if user enters Y/N, asks them if they'd like to play again)
+
+  exit if the user is finished
+
+End
+
+Pseudocode 5 - Get a random number. If the number is event print "RIGHT", if it's odd, print "LEFT". Do this ten times. Print out how many times it was "LEFT" and how many times it was "RIGHT":
+
+Start
+
+Declare integer called totalLeft
+Declare integer called totalRight
+Declare integer called randomNum
+
+For Loop 10 times:
+  randomNum = randomInteger (Between 1 and 100)
+
+  Print randomNum to the user
+
+  If randomNum % 2 = 0 (Checks if even)
+    increment totalRight
+  Else (If not even, then odd)
+    increment totalLeft
+
+For loop finished
+
+Print totalRight to the user
+Print totalLeft to the user
+
+End
+  
