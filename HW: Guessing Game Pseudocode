@@ -1,0 +1,35 @@
+// HW: Guessing Game Pseudocode assignment
+
+Start
+
+Declare an integer variable called randomInt
+Declare an integer variable called attempts
+Declare an integer variable called userInput, set to -1
+
+Print welcome and title message
+Print a prompt explaining that the user has 7 attempts to enter a correct guess
+
+Enter a while loop, exits if userInput = 0
+
+	Assign a random number between 1 and 100 to randomInt
+
+	Enter a do-while loop, exits if attempts >= 7 or randomInt = userInput
+		Prompt user to input guess, formatted to be numbered by using the attempts variable
+		Gather user input, validate against invalid input (integer only)
+		Increment attempts
+
+	If randomInt = userInput
+		Print winning condition
+	Else
+		Print losing condition
+
+	Reset attempts and set userInput to -1
+
+	Prompt user to enter 0 to exit, press anything else to restart
+	
+	Gather user input, validate against invalid input (integer only)
+
+Print exit message
+
+End
+	
