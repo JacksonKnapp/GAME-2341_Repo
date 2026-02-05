@@ -29,6 +29,8 @@ Enter a while loop, exits if userInput = 0
 	
 	Gather user input, validate against invalid input (integer only)
 
+	End loop
+
 Print exit message
 
 End
