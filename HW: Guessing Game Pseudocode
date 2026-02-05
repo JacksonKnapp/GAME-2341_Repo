@@ -15,7 +15,7 @@ Enter a while loop, exits if userInput = 0
 
 	Enter a do-while loop, exits if attempts >= 7 or randomInt = userInput
 		Prompt user to input guess, formatted to be numbered by using the attempts variable
-		Gather user input, validate against invalid input (integer only)
+		Gather user input, validate against invalid input (integer only), set input to userInput
 		Increment attempts
 
 	If randomInt = userInput
@@ -27,7 +27,7 @@ Enter a while loop, exits if userInput = 0
 
 	Prompt user to enter 0 to exit, press anything else to restart
 	
-	Gather user input, validate against invalid input (integer only)
+	Gather user input, validate against invalid input (integer only), set input to userInput
 
 	End loop
 
