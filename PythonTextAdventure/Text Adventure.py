@@ -1,5 +1,6 @@
 
 import random
+import json
 
 def validate_input(options_result_dict, prompt):
     attempts = 5
@@ -21,4 +22,15 @@ def validate_input(options_result_dict, prompt):
             else:
                 attempts -= 5
                 print (f"That was not an available option! {attempts} attempts remaining until one is chosen for you!")
-                
+
+gameover = False
+
+# Loads adventure JSON file 
+with open ("adventure_tree.JSON", "r") as file:
+    adventure = json.load(file)
+
+# Sets beginning parameters
+current_location = "start"
+
+while gameover == False:
+
