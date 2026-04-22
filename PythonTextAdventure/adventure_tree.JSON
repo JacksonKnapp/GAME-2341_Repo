@@ -1,9 +1,20 @@
 {
     "locations":{
-        "metro": {
-            "description": "     ",
+        "Start": {
+            "description": "A metro area, there are three exits",
             "choices": {
-                "  " : " "
+                "North" : {
+                    "choice_description" : "choice description 1",
+                    "destination" : "result 1"
+                } ,
+                "West" : {
+                    "choice_description" : "choice description 2",
+                    "destination" : "result 2"
+                } ,
+                "East" : {
+                    "choice_description" : "choice description 3",
+                    "destination" : "result 3"
+                }
             }
         }
     }
