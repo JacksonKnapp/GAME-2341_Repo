@@ -10,15 +10,15 @@
     },
 
     "Destroyed Metro": {
-      "description": "A dilapitated and destroyed Metro subway entrance.",
+      "description": "A dilapitated and destroyed Metro entrance.",
       "choices": {
-        "Utility Passage": { "choice_description": "choice description", "destination": "Location 3" },
-        "Alleyway": { "choice_description": "choice description", "destination": "Location 4" },
-        "Westward": { "choice_description": "choice description", "destination": "Location 5" }
+        "Utility Passage": { "choice_description": "choice description", "destination": "Utility Passage" },
+        "Alleyway": { "choice_description": "choice description", "destination": "Alleyway" },
+        "Westward": { "choice_description": "choice description", "destination": "Westward" }
       }
     },
 
-    "Location 3": {
+    "Utility Passage": {
       "description": "Location 3 description",
       "choices": {
         "North": { "choice_description": "choice description", "destination": "Location 4" },

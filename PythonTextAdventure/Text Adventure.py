@@ -25,7 +25,7 @@ def validate_input(choices, prompt):
             match = matches[0]
             if match in lower_choices:
                 # if the given choice is present in the options, return the associated key value pair
-                choice = choices.get(match)
+                choice = f"{match.title()}"
                 return choice
             else:
                 raise ValueError
@@ -43,17 +43,21 @@ def validate_input(choices, prompt):
 
 # Removes all present console output and prints the provided prompt
 def flush_print(prompt):
+    # prints either in case of os.system deprecation
     if os.name == "nt":
         os.system("cls")
     else:
         print("\033[2J\033[H", end="")
 
+    # Prints header line after the console has been cleared
+    width = os.get_terminal_size().columns * .8
+    print(f"\n=============================== Text Adventure {"=" * int(width)}\n")
     anim_print(prompt)
 
-
+# a function used to animate a print operation to console
 def anim_print(prompt):
     for char in prompt:
-        if char == '`':
+        if char == '`': # checks each character for the special ` marker, denoting a longer delay (75x longer)
             time.sleep(TEXT_ANIM_DELAY * 75)
         else:
             print(char, end = "", flush = True)
@@ -67,7 +71,7 @@ def print_location_details(location):
         string = ""
         desc = adventure["locations"][f"{location}"]["description"]
         choices = adventure["locations"][f"{location}"]["choices"]
-        string = f"{location}:\n\n{desc}`\n"
+        string = f"{location}:\n\n{desc}```\n"
         
         for choice, info in choices.items():
             desc = info["choice_description"]
@@ -76,7 +80,7 @@ def print_location_details(location):
         flush_print(string)
         return choices
     except Exception as e:
-        print("Error: {e}")
+        print(f"Error: {e}")
 
 
 
@@ -84,10 +88,6 @@ def print_location_details(location):
 gameover = False
 current_location = "Destroyed Metro" # Starting location
 TEXT_ANIM_DELAY = .003 # adjusts the speed of the scrolling text output to console
-
-
-print("\n\n\t============ Text Adventure ===========\n\n")
-
 
 
 # Loads adventure JSON file
@@ -106,6 +106,7 @@ while gameover == False:
     choices = print_location_details(current_location)
 
     choice = validate_input(choices,"\n\nChoice: ")
+    current_location = choice
 
 
 
