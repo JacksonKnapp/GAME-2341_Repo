@@ -23,6 +23,7 @@ def distance(x1,x2,y1,y2):
 iterator = 0
 numofDinosaur = 5
 numofPowerUp = 0
+powerUpMultiplier = 1
 powerUpX = 0
 powerUpY = 0
 startX = []
@@ -32,7 +33,7 @@ speed = []
 while iterator < numofDinosaur:
   startX.append(random.randint(0, width - Dinosaur.get_width() + 1))
   startY.append(0 - random.randint(Dinosaur.get_height(), Dinosaur.get_height() * 2))
-  speed.append(0.5)
+  speed.append(0.5 * powerUpMultiplier)
   iterator += 1
 
 replayscreen = False
@@ -67,7 +68,7 @@ while gameover == False:
         if coords[0] >= startX[iterator] and coords[0] <= startX[iterator] + Dinosaur.get_width() and coords[1] > startY[iterator] and coords[1] < startY[iterator] + Dinosaur.get_height():
           startX[iterator] =  random.randint(0, width - Dinosaur.get_width() + 1)
           startY[iterator] = 0 - random.randint(Dinosaur.get_height(), Dinosaur.get_height() * 2)
-          speed[iterator] = 0.5
+          speed[iterator] = 0.5 * powerUpMultiplier
           break
         iterator += 1
     else:
@@ -76,7 +77,7 @@ while gameover == False:
         while iterator < numofDinosaur:
           startX[iterator] =  random.randint(0, width - Dinosaur.get_width() + 1)
           startY[iterator] = 0 - random.randint(Dinosaur.get_height(), Dinosaur.get_height() * 2)
-          speed[iterator] = 0.5
+          speed[iterator] = 0.5 * powerUpMultiplier
           iterator +=1
         replayscreen = False
 
@@ -91,13 +92,16 @@ while gameover == False:
     while iterator < numofDinosaur:
       if startY[iterator] + Dinosaur.get_height() > height:
         replayscreen = True
+        numofPowerUp = 0
+        powerUpMultiplier = 1
         break
       # checks if the iterated dinosaur is close enough to the powerup
       if numofPowerUp > 0:
         # separated if statements to not waste resources if a power-up is not yet made
-        if distance((startX[iterator]),powerUpX,(startY[iterator]), powerUpY) < 50:
-          print("POWERED UP!")
-          numofPowerUP = 0
+        if distance(startX[iterator] + (Dinosaur.get_width()/2), powerUpX, startY[iterator] + (Dinosaur.get_height()/2), powerUpY) < 150:
+          powerUpMultiplier += .25
+          numofPowerUp = 0
+          print(f"POWERED UP! new speed is {powerUpMultiplier}x")
         
       startY[iterator] += speed[iterator]
       iterator += 1
@@ -112,7 +116,7 @@ while gameover == False:
       screen.blit(Dinosaur, (startX[iterator], startY[iterator]))
       iterator += 1
     if numofPowerUp == 1:
-        screen.blit(powerUp,(powerUpX, powerUpY))
+        screen.blit(powerUp,(powerUpX - powerUp.get_width()/2, powerUpY - powerUp.get_height()/2))
 
     iterator = 0
   else:
@@ -125,7 +129,7 @@ while gameover == False:
   pygame.display.flip()
 
   if numofPowerUp < 1 and random.random() > .999:
-    #checks if a powerup already exists. If not, theres a 1% chance of spawning one
+    #checks if a powerup already exists. If not, theres a .1% chance of spawning one
     numofPowerUp = 1
     print("Power Up Available")
     powerUpX = random.randint(0, width - powerUp.get_width() + 1)
