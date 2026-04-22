@@ -1,21 +1,228 @@
 {
-    "locations":{
-        "Start": {
-            "description": "A metro area, there are three exits",
-            "choices": {
-                "North" : {
-                    "choice_description" : "choice description 1",
-                    "destination" : "result 1"
-                } ,
-                "West" : {
-                    "choice_description" : "choice description 2",
-                    "destination" : "result 2"
-                } ,
-                "East" : {
-                    "choice_description" : "choice description 3",
-                    "destination" : "result 3"
-                }
-            }
-        }
+  "locations": {
+    "Location 1": {
+      "description": "Location 1 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 2" },
+        "West": { "choice_description": "choice description", "destination": "Location 3" },
+        "East": { "choice_description": "choice description", "destination": "Location 4" }
+      }
+    },
+
+    "Destroyed Metro": {
+      "description": "A dilapitated and destroyed Metro subway entrance.",
+      "choices": {
+        "Utility Passage": { "choice_description": "choice description", "destination": "Location 3" },
+        "Alleyway": { "choice_description": "choice description", "destination": "Location 4" },
+        "Westward": { "choice_description": "choice description", "destination": "Location 5" }
+      }
+    },
+
+    "Location 3": {
+      "description": "Location 3 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 4" },
+        "West": { "choice_description": "choice description", "destination": "Location 5" },
+        "East": { "choice_description": "choice description", "destination": "Location 6" }
+      }
+    },
+
+    "Location 4": {
+      "description": "Location 4 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 5" },
+        "West": { "choice_description": "choice description", "destination": "Location 6" },
+        "East": { "choice_description": "choice description", "destination": "Location 7" }
+      }
+    },
+
+    "Location 5": {
+      "description": "Location 5 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 6" },
+        "West": { "choice_description": "choice description", "destination": "Location 7" },
+        "East": { "choice_description": "choice description", "destination": "Location 8" }
+      }
+    },
+
+    "Location 6": {
+      "description": "Location 6 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 7" },
+        "West": { "choice_description": "choice description", "destination": "Location 8" },
+        "East": { "choice_description": "choice description", "destination": "Location 9" }
+      }
+    },
+
+    "Location 7": {
+      "description": "Location 7 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 8" },
+        "West": { "choice_description": "choice description", "destination": "Location 9" },
+        "East": { "choice_description": "choice description", "destination": "Location 10" }
+      }
+    },
+
+    "Location 8": {
+      "description": "Location 8 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 9" },
+        "West": { "choice_description": "choice description", "destination": "Location 10" },
+        "East": { "choice_description": "choice description", "destination": "Location 11" }
+      }
+    },
+
+    "Location 9": {
+      "description": "Location 9 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 10" },
+        "West": { "choice_description": "choice description", "destination": "Location 11" },
+        "East": { "choice_description": "choice description", "destination": "Location 12" }
+      }
+    },
+
+    "Location 10": {
+      "description": "Location 10 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 11" },
+        "West": { "choice_description": "choice description", "destination": "Location 12" },
+        "East": { "choice_description": "choice description", "destination": "Location 13" }
+      }
+    },
+
+    "Location 11": {
+      "description": "Location 11 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 12" },
+        "West": { "choice_description": "choice description", "destination": "Location 13" },
+        "East": { "choice_description": "choice description", "destination": "Location 14" }
+      }
+    },
+
+    "Location 12": {
+      "description": "Location 12 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 13" },
+        "West": { "choice_description": "choice description", "destination": "Location 14" },
+        "East": { "choice_description": "choice description", "destination": "Location 15" }
+      }
+    },
+
+    "Location 13": {
+      "description": "Location 13 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 14" },
+        "West": { "choice_description": "choice description", "destination": "Location 15" },
+        "East": { "choice_description": "choice description", "destination": "Location 16" }
+      }
+    },
+
+    "Location 14": {
+      "description": "Location 14 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 15" },
+        "West": { "choice_description": "choice description", "destination": "Location 16" },
+        "East": { "choice_description": "choice description", "destination": "Location 17" }
+      }
+    },
+
+    "Location 15": {
+      "description": "Location 15 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 16" },
+        "West": { "choice_description": "choice description", "destination": "Location 17" },
+        "East": { "choice_description": "choice description", "destination": "Location 18" }
+      }
+    },
+
+    "Location 16": {
+      "description": "Location 16 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 17" },
+        "West": { "choice_description": "choice description", "destination": "Location 18" },
+        "East": { "choice_description": "choice description", "destination": "Location 19" }
+      }
+    },
+
+    "Location 17": {
+      "description": "Location 17 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 18" },
+        "West": { "choice_description": "choice description", "destination": "Location 19" },
+        "East": { "choice_description": "choice description", "destination": "Location 20" }
+      }
+    },
+
+    "Location 18": {
+      "description": "Location 18 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 19" },
+        "West": { "choice_description": "choice description", "destination": "Location 20" },
+        "East": { "choice_description": "choice description", "destination": "Location 21" }
+      }
+    },
+
+    "Location 19": {
+      "description": "Location 19 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 20" },
+        "West": { "choice_description": "choice description", "destination": "Location 21" },
+        "East": { "choice_description": "choice description", "destination": "Location 22" }
+      }
+    },
+
+    "Location 20": {
+      "description": "Location 20 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 21" },
+        "West": { "choice_description": "choice description", "destination": "Location 22" },
+        "East": { "choice_description": "choice description", "destination": "Location 23" }
+      }
+    },
+
+    "Location 21": {
+      "description": "Location 21 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 22" },
+        "West": { "choice_description": "choice description", "destination": "Location 23" },
+        "East": { "choice_description": "choice description", "destination": "Location 24" }
+      }
+    },
+
+    "Location 22": {
+      "description": "Location 22 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 23" },
+        "West": { "choice_description": "choice description", "destination": "Location 24" },
+        "East": { "choice_description": "choice description", "destination": "Location 25" }
+      }
+    },
+
+    "Location 23": {
+      "description": "Location 23 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 24" },
+        "West": { "choice_description": "choice description", "destination": "Location 25" },
+        "East": { "choice_description": "choice description", "destination": "Location 1" }
+      }
+    },
+
+    "Location 24": {
+      "description": "Location 24 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 25" },
+        "West": { "choice_description": "choice description", "destination": "Location 1" },
+        "East": { "choice_description": "choice description", "destination": "Location 2" }
+      }
+    },
+
+    "Location 25": {
+      "description": "Location 25 description",
+      "choices": {
+        "North": { "choice_description": "choice description", "destination": "Location 1" },
+        "West": { "choice_description": "choice description", "destination": "Location 2" },
+        "East": { "choice_description": "choice description", "destination": "Location 3" }
+      }
     }
+  }
 }

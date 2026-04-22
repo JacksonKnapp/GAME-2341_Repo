@@ -1,32 +1,64 @@
+# Name: Jackson Knapp
+# Date: 4/21/26
+# Description:
+
+# Notes: 
+#   the character ` is used in constructed output strings to denote a longer delay in the anim_print() function
+#
+#
+
 
 import random
 import json
+import difflib # used to find comparable words
+import os
+import time # used for animated text
 
 # A function to validate input and make sure that an option that is chosen is valid
-def validate_input(options_result_dict, prompt):
+def validate_input(choices, prompt):
     attempts = 5
     while True:
         try:
-            user_input = input(prompt)
-            if user_input in options_result_dict:
+            user_input = input(prompt).lower()
+            lower_choices = [c.lower() for c in choices]
+            matches = difflib.get_close_matches(user_input, lower_choices, n = 1, cutoff = 0.6)
+            match = matches[0]
+            if match in lower_choices:
                 # if the given choice is present in the options, return the associated key value pair
-                choice = options_result_dict.get(user_input)
+                choice = choices.get(match)
                 return choice
             else:
                 raise ValueError
-        except ValueError:
+        except Exception:
             if attempts <= 0:
-                len(options_result_dict)
+                len(choices)
                 # a random choice is made and returned
-                choice = random.choice(list(options_result_dict.values()))
+                choice = random.choice(list(choices.values()))
                 return choice
             else:
                 attempts -= 1
-                print (f"That was not an available option! {attempts} attempts remaining until one is chosen for you!")
+                anim_print(f"That was not an available option! {attempts} attempts remaining until one is chosen for you!")
+
+
 
 # Removes all present console output and prints the provided prompt
 def flush_print(prompt):
-    print(prompt, end = "   ", flush = True)
+    if os.name == "nt":
+        os.system("cls")
+    else:
+        print("\033[2J\033[H", end="")
+
+    anim_print(prompt)
+
+
+def anim_print(prompt):
+    for char in prompt:
+        if char == '`':
+            time.sleep(TEXT_ANIM_DELAY * 75)
+        else:
+            print(char, end = "", flush = True)
+            time.sleep(TEXT_ANIM_DELAY)
+
 
 # Prints location details by a given location
 def print_location_details(location):
@@ -35,18 +67,28 @@ def print_location_details(location):
         string = ""
         desc = adventure["locations"][f"{location}"]["description"]
         choices = adventure["locations"][f"{location}"]["choices"]
-        string = f"{location}:\n\n{desc}\n"
+        string = f"{location}:\n\n{desc}`\n"
         
         for choice, info in choices.items():
             desc = info["choice_description"]
             dest = info["destination"]
-            string += f"\n{choice}\t| {desc}\t\tLeads to: {dest}"
+            string += f"\n{choice}\t| {desc}\t\tLeads to: {dest}`"
         flush_print(string)
         return choices
     except Exception as e:
         print("Error: {e}")
 
+
+
+# Sets beginning parameters
 gameover = False
+current_location = "Destroyed Metro" # Starting location
+TEXT_ANIM_DELAY = .003 # adjusts the speed of the scrolling text output to console
+
+
+print("\n\n\t============ Text Adventure ===========\n\n")
+
+
 
 # Loads adventure JSON file
 try: 
@@ -56,9 +98,7 @@ except FileNotFoundError:
     print("Error: adventure_tree.JSON file not found!")
     gameover = True
 
-# Sets beginning parameters
-current_location = "Start"
-print("\n\n\t============ Text Adventure ===========\n\n")
+
 
 # Game loop
 while gameover == False:
