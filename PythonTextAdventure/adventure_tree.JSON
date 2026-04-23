@@ -149,7 +149,7 @@
     "Security Corridor": {
       "description": "Following metallic noise from the waiting area or the faded security signs from the junction brings you into a corridor lined with dead cameras and silent alarm boxes. The walls still carry the faded authority of the old world.",
       "choices": {
-        "Force the Armory": {
+        "Break Into the Armory": {
           "choice_description": "Break into the sealed security stores and arm yourself.",
           "destination": "Armory Cache"
         },
@@ -171,7 +171,7 @@
           "choice_description": "Take what you can carry and press deeper into the security wing.",
           "destination": "Holding Cells"
         },
-        "Take the Maintenance Cut-Through": {
+        "Take the Maintenance exit": {
           "choice_description": "Use a narrow service opening at the back of the cache.",
           "destination": "Generator Room"
         }
@@ -215,12 +215,12 @@
         },
         "Leave on Foot": {
           "choice_description": "Take only what you can carry and move on.",
-          "destination": "FinalDecisionOnFoot"
+          "destination": "Final Decision On Foot"
         }
       }
     },
 
-    "FinalDecisionOnFoot": {
+    "Final Decision On Foot": {
       "description": "You leave the supply route carrying what you can manage. The city still offers two futures: flee what remains, or gamble on bringing part of it back to life.",
       "choices": {
         "Escape Alone": {
@@ -287,7 +287,7 @@
     },
 
     "Final Decision": {
-      "description": "You stand at the heart of what remains. The city breathes faintly around you—broken, but not silent. The path forward is no longer hidden. What you do now will define what comes next.",
+      "description": "You stand at the heart of what remains. The city breathes faintly around you, broken, but not silent. The path forward is no longer hidden. What you do now will define what comes next.",
       "choices": {
         "Escape Alone": {
           "choice_description": "Leave now, with whatever you carry.",
@@ -301,7 +301,7 @@
     },
 
     "Escape Ending": {
-      "description": "You leave the city behind, stepping beyond its broken edge into uncertain ground. Whatever remains inside fades into silence behind you. You survived—but the future is still unwritten.",
+      "description": "You leave the city behind, stepping beyond its broken edge into uncertain ground. Whatever remains inside fades into silence behind you. You survived, but the future is still unwritten.",
       "choices": {}
     },
 
@@ -311,12 +311,12 @@
     },
 
     "Stay Ending": {
-      "description": "Power surges through the Metro once more. Lights flicker on in the darkness, and the city stirs faintly around you. You choose to remain—not to escape, but to rebuild.",
+      "description": "Power surges through the Metro once more. Lights flicker on in the darkness, and the city stirs faintly around you. You choose to remain. Not to escape, but to rebuild.",
       "choices": {}
     },
 
     "Sacrifice Ending": {
-      "description": "You act without hesitation. In the chaos that follows, others find their chance to escape. You remain behind, knowing the cost. Your path ends here—but not without meaning.",
+      "description": "You act without hesitation. In the chaos that follows, others find their chance to escape. You remain behind, knowing the cost. Your path ends here but not without meaning.",
       "choices": {}
     }
   }

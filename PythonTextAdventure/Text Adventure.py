@@ -38,10 +38,10 @@ def validate_input_by_choice(choices, p):
                 # splits the input into words and compares them against the options
                 user_input_split = user_input.split()
                 for c in lower_choices:
-                    choices_split = c.split() # a list of words in the choice option.
-                    for u in user_input_split:
+                    choices_split = c.split() # a list of words made from the current choice
+                    for u in user_input_split: # a list of words made from the user input
                         split_matches = difflib.get_close_matches(u, choices_split, n = 1, cutoff = 0.6)
-                        if len(split_matches) > 0:
+                        if len(split_matches) > 0: # if any close enough matches are made, this option is the desired choice
                             return c.title()
 
             raise ValueError # raises error only if no match is found by either method
@@ -64,7 +64,7 @@ def flush_print(prompt):
 def print_header():
     # Prints header line after the console has been cleared
     width = os.get_terminal_size().columns * .8
-    print(f"\n=============================== Text Adventure {"=" * int(width)}\n")
+    print(f"\n=============================== {GAME_NAME} {"=" * int(width)}\n\n")
 
 
 # Clears console instantly
@@ -86,11 +86,16 @@ def anim_print(prompt, delay_modifier):
             time.sleep(TEXT_ANIM_DELAY * delay_modifier)
 
 
+def match_text(test, match_to):
+    matches = difflib.get_close_matches(test, match_to, n = 1, cutoff = 0.6)
+    match = matches[0]
+    return match
+
+
 # Prints location details by a given location
 def print_location_details(location, animate):
     try:
         #builds a string to pass onto a single print option that flushes the console
-        string = ""
         desc = adventure["locations"][f"{location}"]["description"]
         choices = adventure["locations"][f"{location}"]["choices"]
         string = f"{location}:\n\n{desc}```\n"
@@ -110,17 +115,18 @@ def print_location_details(location, animate):
         
         # non-animated print
         print_header()
-        altered_string = string.replace("`", "")  # alters the string to remove the "`" character
+        altered_string = string.replace("`", "")  # alters the string to remove the "`" character that is used for animation
         print(altered_string, end = "", flush = True)
         return None
     
     except Exception as e:
         print(f"Error: {e}")
 
+
 # intro sequence at the game start
 def intro():
     clear_console()
-    intro_string = "Text Adventure\n\nAre you ready to begin?\n\nEnter 'Yes' to play: "
+    intro_string = f"{GAME_NAME}\n\nAre you ready to begin?\n\nEnter 'Yes' to play:\t"
     anim_print(intro_string, 1)
     while True:
         try:
@@ -146,16 +152,57 @@ def intro():
     "little you have now. Most truly was lost from just the past few days``\n\nPress anything to continue...",2)
     input()
 
+
 def game_ended(choice):
     clear_console()
     print_header()
-    string
+    ending = adventure["locations"][f"{choice}"]
+    desc = ending["description"]
+    ending_string = f"{choice}:\n\n{desc}\n\nEnter R to restart the game.\tEnter anything else to exit the game.\n\nChoice: "
+    anim_print(ending_string,1)
+
+    # tells the function to use the global variable, not a new local one
+    global gameover
+
+    while True:
+        try:
+            user_input = input().lower()
+            match = match_text(user_input,["r"])
+            if match is "r":
+                anim_print("\nRestarting Game...```",1)
+                reset_game_state()
+                return
+            else:
+                clear_console()
+                anim_print("Game Exiting.....``",1)
+                gameover = True
+                return
+        except:
+            clear_console()
+            anim_print("Game Exiting.....``",1)
+            gameover = True
+            return
 
 
-# Sets beginning parameters
+def reset_game_state():
+    global gameover
+    global current_location
+    gameover = False 
+    current_location = "Destroyed Metro"
+
+
+##########################################################################################################
+###                MAIN                                                                              #####
+##########################################################################################################
+
+
+
+
 gameover = False
-current_location = "Destroyed Metro" # Starting location
-TEXT_ANIM_DELAY = .003 # adjusts the speed of the scrolling text output to console 
+current_location = "Destroyed Metro"
+TEXT_ANIM_DELAY = .003 # adjusts the speed of the scrolling text output to console
+GAME_NAME = "What Remains... The Text Adventure"
+
 
 
 # Loads adventure JSON file, ends the game if the JSON is not found- as then there is no game anyway :)
@@ -180,17 +227,9 @@ while gameover == False:
                 dest = info["destination"]
                 current_location = dest
     
-    if "ending" in current_location.lower():
+    if "ending" in current_location.lower(): # if-statement checks if the destination just traveled to contains ending in the name
         clear_console()
-        print("GAME FINISHED!")
         game_ended(current_location)
-        input()
 
-
-
-
-
-
-
-# Game finished
-print("Game ended!")
+# Game exited
+print("Game exited!")
