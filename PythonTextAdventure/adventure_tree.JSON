@@ -179,7 +179,7 @@
     },
 
     "Holding Cells": {
-      "description": "Beyond the security rooms, the corridor narrows into a line of reinforced holding cells. Voices echo from behind locked doors—survivors, hungry and terrified, trapped with no way out.",
+      "description": "Beyond the security rooms, the corridor narrows into a line of reinforced holding cells. Voices echo from behind locked doors- survivors, hungry and terrified, trapped with no way out.",
       "choices": {
         "Ignore Them": {
           "choice_description": "Focus on your own survival and move on.",

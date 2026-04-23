@@ -1,18 +1,21 @@
 # Name: Jackson Knapp
 # Date: 4/21/26
-# Description:
+# Description: A game program that uses dictionaries, functions, animated text, and more to build a text-adventure game.
 
 # Notes: 
-#   the character ` is used in constructed output strings to denote a longer delay in the anim_print() function
-#   
-#
-
+#   - the character ` is used in constructed output strings to denote a longer delay in the anim_print() function.
+#   - uses a JSON file to organize and manage a branching structure of data between given choices.
+#   - uses all default libraries that do not need to be installed
+ 
 
 import random
+from pathlib import Path
 import json
 import difflib # used to find comparable words
 import os
 import time # used for animated text
+
+# Functions
 
 # A function to validate input and make sure that an option that is chosen is valid
 def validate_input_by_choice(choices, p):
@@ -73,6 +76,7 @@ def clear_console():
     if os.name == "nt":
         os.system("cls")
     else:
+        # looked it up but \033 starts an escape command sequence, [2J clears the console, and [H moves the cursor back to the top-left of the console.
         print("\033[2J\033[H", end="")
 
 
@@ -86,6 +90,7 @@ def anim_print(prompt, delay_modifier):
             time.sleep(TEXT_ANIM_DELAY * delay_modifier)
 
 
+# uses difflib to match text closely and returns what is found, even if nothing is
 def match_text(test, match_to):
     matches = difflib.get_close_matches(test, match_to, n = 1, cutoff = 0.6)
     match = matches[0]
@@ -101,6 +106,7 @@ def print_location_details(location, animate):
         string = f"{location}:\n\n{desc}```\n"
         string += f""
         
+        #loops through the choices list from the adventure.JSON dictionary. Prints all of the info a clean and readable format.
         for choice, info in choices.items():
             desc = info["choice_description"]
             dest = info["destination"]
@@ -128,7 +134,7 @@ def intro():
     clear_console()
     intro_string = f"{GAME_NAME}\n\nAre you ready to begin?\n\nEnter 'Yes' to play:\t"
     anim_print(intro_string, 1)
-    while True:
+    while True: # keeps gathering user input to match "yes" so the game may begin
         try:
             user_input = input().lower()
             matches = difflib.get_close_matches(user_input, ["yes"], n = 1, cutoff = 0.6)
@@ -153,6 +159,7 @@ def intro():
     input()
 
 
+# moves the game into a game ended state. The information for the ending prints and a prompt is given to the user to restart or end the game
 def game_ended(choice):
     clear_console()
     print_header()
@@ -184,7 +191,7 @@ def game_ended(choice):
             return
 
 
-def reset_game_state():
+def reset_game_state(): # resets basic game-start variables
     global gameover
     global current_location
     gameover = False 
@@ -195,25 +202,23 @@ def reset_game_state():
 ###                MAIN                                                                              #####
 ##########################################################################################################
 
-
-
-
+# global and constant variables
 gameover = False
 current_location = "Destroyed Metro"
 TEXT_ANIM_DELAY = .003 # adjusts the speed of the scrolling text output to console
 GAME_NAME = "What Remains... The Text Adventure"
 
-
-
 # Loads adventure JSON file, ends the game if the JSON is not found- as then there is no game anyway :)
 try: 
-    with open ("GAME-2341_Repo/PythonTextAdventure/adventure_tree.JSON", "r") as file:
+    directory = Path(__file__).parent / "adventure_tree.JSON" # uses the directory of the text adventure.py game and looks in the same folder for the JSON
+    with open (directory, "r") as file:
         adventure = json.load(file)
 except FileNotFoundError:
     print("Error: adventure_tree.JSON file not found!")
     gameover = True
+    time.sleep(3)
 
-intro()
+intro() # calls intro sequence
 
 # Game loop
 while gameover == False:
