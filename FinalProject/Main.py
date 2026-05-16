@@ -39,8 +39,8 @@ def load_directory(): #function to load data from a directory, handles file not 
     
 def generate_tiles():
 
-    types = ["Stone","Uranium","Tullium"] #tile options
     global tiles_group
+    tile_options = list(TILE_TYPES.keys())
 
     for r in range(TILES_X):
         for c in range(TILES_Y):
@@ -48,8 +48,8 @@ def generate_tiles():
             y = TILES_START_Y + (r * (TILE_SIZE + TILE_SPACING))
 
             tile = Tile(x, y, TILE_SIZE)
-            tile.type = random.choice(types) #randomly chooses tile type while spawning from a list of options
-            tile.set_image(stone)
+            tile.type = random.choice(tile_options) #randomly chooses tile type while spawning from a list of options
+            tile.set_image(unknown_tile)
             tiles_group.add(tile)
 
 def spawn_character():
@@ -75,6 +75,26 @@ def detect_sprite_overlap(sprite_group, test_location):
 
     return found_sprites
 
+def get_adjacent_tiles(Tile):
+
+    global TILE_SIZE
+    global TILE_SPACING
+
+    pos = Tile.rect.center
+    offsets = [(1,0),(0,1),(-1,0),(0,-1)]
+    adjacent_tiles = pygame.sprite.Group()
+
+    for x in range(4):
+        ox, oy = offsets[x]
+        offset = (ox * (TILE_SIZE + TILE_SPACING), oy * (TILE_SIZE + TILE_SPACING))
+        for adjacent_tile in tiles_group:
+            test_pos = (pos[0] + offset[0], pos[1] + offset[1])
+            if adjacent_tile.rect.collidepoint(test_pos):
+                debug("Found adjacent tile")
+                adjacent_tiles.add(adjacent_tile)
+
+    return adjacent_tiles
+
 # pygame settings/init
 
 DIR = load_directory() #directory
@@ -92,28 +112,36 @@ debug_messages = []
 
 running = True # game loop variable
 
+# Images
+unknown_tile = pygame.image.load(DIR / "unknown_tile.png")
+stone_tile = pygame.image.load(DIR / "stone_tile.png")
+tullium_tile = pygame.image.load(DIR / "tullium_tile.png")
+uranium_tile = pygame.image.load(DIR / "uranium_tile.png")
+char = pygame.image.load(DIR / "char.png")
+ui_img = pygame.image.load(DIR / "ui.png")
+
 # Tiles
-TILE_SIZE = 65
-TILE_SPACING = 4
+TILE_SIZE = 67
+TILE_SPACING = 0
 TILES_X = 10
 TILES_Y = 10
-TILES_START_X = (SCREEN_WIDTH/2) - (((TILES_Y * TILE_SIZE) - (TILES_Y * TILE_SPACING))/2) - TILE_SIZE/2 #Calculates the start POS of tile 0 so that the tiles are centered when generated - X row
-TILES_START_Y = (SCREEN_HEIGHT/2) - (((TILES_Y * TILE_SIZE) - (TILES_Y * TILE_SPACING))/2) - TILE_SIZE/2 #Calculates the start POS of tile 0 so that the tiles are centered when generated - Y row
+TILES_START_X = ((SCREEN_WIDTH/2) - (((TILES_Y * TILE_SIZE) - (TILES_Y * TILE_SPACING))/2) - TILE_SIZE/2) + TILE_SIZE/1.25 #Calculates the start POS of tile 0 so that the tiles are centered when generated - X row
+TILES_START_Y = ((SCREEN_HEIGHT/2) - (((TILES_Y * TILE_SIZE) - (TILES_Y * TILE_SPACING))/2) - TILE_SIZE/2) + 45 #Calculates the start POS of tile 0 so that the tiles are centered when generated - Y row
+TILE_TYPES = {"Stone": stone_tile,"Uranium": uranium_tile,"Tullium": tullium_tile} #tile options
 
 # Character
 CHAR_SIZE = TILE_SIZE - 30
 CHAR_INTERACT_DIST = 35
-CHAR_SPEED = 3
+CHAR_SPEED = 5
 CHAR_COOLDOWN_TIME = 2
+
+# Game
+DEATH_SPEED = 25
 
 # colors
 BLACK = (0,0,0)
 GRAY = (120, 120, 120)
 GREEN = (0, 200, 80)
-
-# images
-stone = pygame.image.load(DIR / "stone.png")
-char = pygame.image.load(DIR / "char.png")
 
 # classes
 
@@ -132,8 +160,14 @@ class Tile(pygame.sprite.Sprite):
 
         self.type = "Default"
 
+
     def set_image(self, new_image): #sets and updates the Tile sprite's image
         self.image = pygame.transform.scale(new_image,(self.size, self.size))
+
+    def update_image_by_type(self):
+        if self.type in list(TILE_TYPES.keys()):
+            self.set_image(TILE_TYPES[self.type])
+
       
 class Character(pygame.sprite.Sprite):
 
@@ -214,6 +248,10 @@ class Character(pygame.sprite.Sprite):
                 for tile in tiles:
                     debug((f"Destroying Tile...  Type: {tile.type}"), 5)
                     
+                    for adjacent_tile in get_adjacent_tiles(tile):
+                        if adjacent_tile is not None:
+                            adjacent_tile.update_image_by_type()
+
                     tile.kill()
                     cooldown_timer.start(CHAR_COOLDOWN_TIME)
 
@@ -237,6 +275,9 @@ class Timer:
     def is_running(self):
         return self.running
     
+    def get_percent(self):
+        return (time.time() - self.start_time) / self.duration
+    
     def check_timer(self): # updates timer parameters, returns true if running, stops timer automatically
         self.running = time.time() < self.stop_time
 
@@ -247,7 +288,9 @@ class Timer:
 
 class ProgressBar(Timer):
 
-    def __init__(self, surface, x, y, width=50, height=5, duration=0, color=(100,100,100)):
+    def __init__(self, surface, x=0, y=0, width=50, height=5, duration=0, color=(100,100,100)):
+        super().__init__() #initializes parent timer
+        
         self.surface = surface
         self.x = x
         self.y = y
@@ -257,37 +300,70 @@ class ProgressBar(Timer):
         self.color = color
         self.percent = 0
 
-    def update(self, percent): #updates progress bar percentage an draws it
+    def update(self, x, y, percent): #updates progress bar percentage an draws it
+
+        # uses the current position of the progress bar if none is given
+
+        if x is None:
+            x = self.x
+
+        if y is None:
+            y = self.y
+
+        self.x = x
+        self.y = y
         self.percent = percent
         self.draw_progress_bar()
 
     def check_progress(self): #calls the super class Timer's check timer function
-        super.check_timer(self)
+        super().check_timer()
 
     def start(self, duration): #calls the super class Timer's start function
-        super.start(self, duration)
+        super().start(duration)
 
     def stop(self): #calls the super class Timer's stop function
-        super.stop(self)
+        super().stop()
 
     def draw_progress_bar(self):
-        pygame.draw.rect(self.surface, self.color - 75, (self.x, self.y, self.width, self.height)) #background
+        pygame.draw.rect(self.surface, 
+                         ((self.color[0] - 75),(self.color[1] - 75),(self.color[2] - 75)),
+                         (self.x - self.width/2, self.y - self.height/2, self.width, self.height)) #background
 
         fill = int(self.width * self.percent)
-        pygame.draw.rect(self.surface, self.color, (self.x, self.y, self.width, self.height)) #fill
+        pygame.draw.rect(self.surface, self.color, (self.x - self.width/2, self.y - self.height/2, fill, self.height)) #fill
+
+class UserInterface:
+
+    def __init__(self):
+        self.death_progress = ProgressBar(screen,640,22,735,26,DEATH_SPEED,(150,150,150)) #sets death_progress bar settings
+
+    def update_user_interface(self):
+        self.draw_user_interface()
+
+    def draw_user_interface(self):
+        screen.blit(ui_img, (0,0))
+
+        self.death_progress.update(None, None, 1 - self.death_progress.get_percent())
+
+    def reset_death_progress(self):
+        self.death_progress.start(DEATH_SPEED)
 
 ################### MAIN ##################
 
 generate_tiles()
 character = spawn_character()
+character_progress_bar = ProgressBar(screen)
 cooldown_timer = Timer()
-
+ui = UserInterface()
+ui.reset_death_progress()
+   
 while running: # Game loop
      
     # Game loop basics
     screen.fill(BLACK)
     tiles_group.draw(screen)
     screen.blit(character.image, character.rect)
+    ui.draw_user_interface()
 
     # Handles debug messages
     for index, debug_message in enumerate(debug_messages):
@@ -305,7 +381,9 @@ while running: # Game loop
     # Character
     character.move(tiles_group)
     character.interact()
-    cooldown_timer.check_timer()
+    # Checks if the character cooldown timer is active, if so- it updates the character_progress_bar object
+    if cooldown_timer.check_timer():
+        character_progress_bar.update(character.rect.centerx, character.rect.top - 10, 1 - cooldown_timer.get_percent()) #sets x, y, and percent using variables from the character and the cooldown timer
 
     pygame.display.flip()
 
