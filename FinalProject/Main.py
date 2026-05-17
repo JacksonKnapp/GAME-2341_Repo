@@ -447,7 +447,7 @@ class ProgressBar(Timer): # a class for representing a progress bar for UI eleme
 
 class UserInterface: # class for the user interface as a whole. Contains all of the UI elements and buttons.
 
-    def __init__(self):
+    def __init__(self): # HUGE constructor wow
         self.death_progress = ProgressBar(screen,640,22,735,26,DEATH_SPEED,(150,150,150)) #sets death_progress bar settings
         self.construct_reactor_button = Button(1055, 625, 160, 50, "Construct Reactor", font, "You need 10 Uranium to construct a reactor")
         self.relocate_button = Button(1055, 530, 160, 50, "Relocate", font, "You need 5 Uranium to relocate")
@@ -469,10 +469,10 @@ class UserInterface: # class for the user interface as a whole. Contains all of 
         self.uranium_count = 0
         self.death_progress_header = TextWidget(SCREEN_WIDTH/2 - 100, 12, "Energy Reserves", header_font)
 
-    def update_user_interface(self):
+    def update_user_interface(self): # kinda useless but its here.
         self.draw_user_interface()
 
-    def draw_user_interface(self):
+    def draw_user_interface(self): #loop through all objects in the class and draw them to the screen
         screen.blit(ui_img, (0,0))
         screen.blit(self.tullium_icon, (1090-40,100))
         screen.blit(self.uranium_icon, (1090-40,250))
@@ -505,7 +505,7 @@ class UserInterface: # class for the user interface as a whole. Contains all of 
 
     def update_count(self, case, new_count):
         match case:
-            case "tullium":
+            case "tullium": # if the update case is tullium, update the text widget, display an animation for it, and dispaly another animation indicating how much was lost or gained.
                 self.old_tullium_count = self.tullium_count
                 self.tullium_count = new_count
                 self.tullium_count_widget.text = str(self.tullium_count)
@@ -523,7 +523,7 @@ class UserInterface: # class for the user interface as a whole. Contains all of 
                 
 
 
-            case "uranium":
+            case "uranium": # if the update case is uranium, update the text widget, display an animation for it, and dispaly another animation indicating how much was lost or gained.
                 self.old_uranium_count = self.uranium_count
                 self.uranium_count = new_count
                 self.uranium_count_widget.text = str(self.uranium_count)
