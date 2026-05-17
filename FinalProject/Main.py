@@ -1,6 +1,6 @@
 # Name: Jackson Knapp
 # Date: 5/11/26
-# Description:
+# Description: 
 
 # imports
 import sys
@@ -12,7 +12,7 @@ from pathlib import Path
 
 # functions
 
-def debug(text, duration=0, x_pos=10, y_pos=10):
+def debug(text, duration=2, x_pos=10, y_pos=10):
 
     debug_expire_time = time.time() + duration
 
@@ -105,6 +105,41 @@ def overshoot(anim_time):
     curve = (1 + 4 * alpha) * ((1 - alpha) ** 2)
     return curve
     
+def bounce(anim_time):
+    alpha = min(anim_time,1)
+    curve = 1 + (math.sin(alpha * math.pi * 3) * (1 - alpha) * .5)
+    return curve
+
+def relocate(splash=True):
+
+    global pause
+    global pause_text
+    global character
+
+    pause = True
+    pause_text = "Relocating..."
+
+    # clear tile group and kill current tile spirtes
+    for tile in tiles_group:
+        tile.kill()
+
+    tiles_group.empty()
+
+    generate_tiles() # regenerate tiles
+
+    # Move character back to starting pos
+    x = 100
+    y = SCREEN_HEIGHT/2
+    character.rect = character.image.get_rect(topleft=(x, y))
+    
+    pause = False
+
+    if not splash:
+        splash = TextWidget(SCREEN_WIDTH/2 - 150,SCREEN_HEIGHT/2 - 25, "Relocated!", pause_font)
+        splash.animate("bounce")
+        splash.destroy_time = time.time() + 1
+        misc_draw.append(splash)
+
 
 # pygame settings/init
 
@@ -117,11 +152,19 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
 font = pygame.font.SysFont("consolas", 14)
+header_font = pygame.font.SysFont("consolas", 24)
+pause_font = pygame.font.SysFont("consolas", 54)
 pygame.display.set_caption("Reactor")
 tiles_group = pygame.sprite.Group()
 debug_messages = []
+misc_draw = []
 animations = []
 tool_tip = None
+pause = False
+pause_text = "Game Paused"
+show_debug = False
+death_time = None
+restart_button = None
 
 running = True # game loop variable
 
@@ -132,8 +175,8 @@ tullium_tile = pygame.image.load(DIR / "tullium_tile.png")
 uranium_tile = pygame.image.load(DIR / "uranium_tile.png")
 char = pygame.image.load(DIR / "char.png")
 ui_img = pygame.image.load(DIR / "ui.png")
-tullium = pygame.image.load(DIR / "tullium.png")
-uranium = pygame.image.load(DIR / "uranium.png")
+tullium_icon = pygame.image.load(DIR / "tullium.png")
+uranium_icon = pygame.image.load(DIR / "uranium.png")
 
 # Tiles
 TILE_SIZE = 67
@@ -148,10 +191,10 @@ TILE_TYPES = {"Stone": stone_tile,"Uranium": uranium_tile,"Tullium": tullium_til
 CHAR_SIZE = TILE_SIZE - 30
 CHAR_INTERACT_DIST = 35
 CHAR_SPEED = 5
-CHAR_COOLDOWN_TIME = 2
+CHAR_COOLDOWN_TIME = 1.5
 
 # Game
-DEATH_SPEED = 25
+DEATH_SPEED = 30 # how fast the energy reserves deplete
 
 # colors
 BLACK = (0,0,0)
@@ -295,6 +338,10 @@ class Character(pygame.sprite.Sprite):
             tiles = self.detect_tile()
             if tiles is not None and not cooldown_timer.is_running():
                 for tile in tiles:
+
+                    pickup = tile.type
+                    pickup = str(pickup).lower()
+
                     debug((f"Destroying Tile...  Type: {tile.type}"), 5)
                     
                     for adjacent_tile in get_adjacent_tiles(tile):
@@ -304,6 +351,12 @@ class Character(pygame.sprite.Sprite):
                     tile.animate("overshoot")
                     tile.collision=False
                     cooldown_timer.start(CHAR_COOLDOWN_TIME)
+
+                    match pickup:
+                        case "tullium":
+                            ui.update_count("tullium",ui.tullium_count + 1)
+                        case "uranium":
+                            ui.update_count("uranium",ui.uranium_count + 1)
 
 class Timer:
 
@@ -390,23 +443,96 @@ class UserInterface:
         self.relocate_button = Button(1055, 530, 160, 50, "Relocate", font, "You need 5 Uranium to relocate")
         self.recycle_tullium_button = Button(1055, 475, 160, 50, "Recycle Tullium", font, "You need 10 Tullium to recycle")
         self.construct_reactor_button.enabled = False
+        self.relocate_button.enabled = False
+        self.recycle_tullium_button.enabled = False
+        self.tullium_icon = pygame.transform.scale(tullium_icon, (100 , 100))
+        self.uranium_icon = pygame.transform.scale(uranium_icon, (100 , 100))
+        self.tullium_name = TextWidget(1095-40, 195, "Tullium:", header_font)
+        self.uranium_name = TextWidget(1095-40, 335, "Uranium:", header_font)
+        self.tullium_count_widget = TextWidget(1095+75, 195, "0", header_font)
+        self.uranium_count_widget = TextWidget(1095+75, 335, "0", header_font)
+        self.tullium_count_adjust_widget = TextWidget(1095+100, 195-20, "", header_font)
+        self.uranium_count_adjust_widget = TextWidget(1095+100, 335-20, "", header_font)
+        self.tullium_count_adjust_widget.visible = False
+        self.uranium_count_adjust_widget.visible = False
+        self.tullium_count = 0
+        self.uranium_count = 0
+        self.death_progress_header = TextWidget(SCREEN_WIDTH/2 - 100, 12, "Energy Reserves", header_font)
 
     def update_user_interface(self):
         self.draw_user_interface()
 
     def draw_user_interface(self):
         screen.blit(ui_img, (0,0))
+        screen.blit(self.tullium_icon, (1090-40,100))
+        screen.blit(self.uranium_icon, (1090-40,250))
 
         self.death_progress.update(None, None, 1 - self.death_progress.get_percent())
         self.construct_reactor_button.draw(screen)
         self.relocate_button.draw(screen)
         self.recycle_tullium_button.draw(screen)
 
+        self.tullium_name.draw(screen)
+        self.uranium_name.draw(screen)
+        self.tullium_count_widget.draw(screen)
+        self.uranium_count_widget.draw(screen)
+
+        if self.tullium_count_adjust_widget.visible:
+            self.tullium_count_adjust_widget.draw(screen)
+        if self.uranium_count_adjust_widget.visible:
+            self.uranium_count_adjust_widget.draw(screen)
+
         if tool_tip:
             tool_tip.draw(screen)
 
+        self.death_progress_header.draw(screen)
+
     def reset_death_progress(self):
+        global death_time
+
         self.death_progress.start(DEATH_SPEED)
+        death_time = time.time() + DEATH_SPEED
+
+    def update_count(self, case, new_count):
+        match case:
+            case "tullium":
+                self.old_tullium_count = self.tullium_count
+                self.tullium_count = new_count
+                self.tullium_count_widget.text = str(self.tullium_count)
+                self.tullium_count_widget.animate("bounce")
+                self.tullium_count_adjust_widget.animate("overshoot_invis")
+                self.tullium_count_adjust_widget.visible = True
+                if self.old_tullium_count < self.tullium_count:
+                    self.tullium_count_adjust_widget.text = f"+{self.tullium_count - self.old_tullium_count}"
+                    self.tullium_count_adjust_widget.text_color = (0,200,0)
+                else:
+                    self.tullium_count_adjust_widget.text = f"-{self.tullium_count - self.old_tullium_count}"
+                    self.tullium_count_adjust_widget.text_color = (200,0,0)
+
+                if self.tullium_count >= 10:
+                    self.recycle_tullium_button.enabled = True
+
+            case "uranium":
+                self.old_uranium_count = self.uranium_count
+                self.uranium_count = new_count
+                self.uranium_count_widget.text = str(self.uranium_count)
+                self.uranium_count_widget.animate("bounce")
+                self.uranium_count_adjust_widget.animate("overshoot_invis")
+                self.uranium_count_adjust_widget.visible = True
+                if self.old_uranium_count < self.uranium_count:
+                    self.uranium_count_adjust_widget.text = f"+{self.uranium_count - self.old_uranium_count}"
+                    self.uranium_count_adjust_widget.text_color = (0,200,0)
+                else:
+                    self.uranium_count_adjust_widget.text = f"-{self.uranium_count - self.old_uranium_count}"
+                    self.uranium_count_adjust_widget.text_color = (200,0,0)
+
+                if self.uranium_count >= 5 and self.uranium_count < 10:
+                    self.construct_reactor_button.enabled = False
+                    self.relocate_button.enabled = True
+                elif self.uranium_count >= 10:
+                    self.construct_reactor_button.enabled = True
+                    self.relocate_button.enabled = False
+
 
 class Button:
      
@@ -422,33 +548,37 @@ class Button:
         self.disabled_hover_color = (200, 60, 60)
         self.enabled = True
         self.ToolTip_object = None
+        self.event = None
 
     def draw(self, surface):
 
         mouse_pos = pygame.mouse.get_pos()
         global tool_tip
 
-        if self.rect.collidepoint(mouse_pos):
-            if self.enabled:
-                color = self.hover_color
-                if self.ToolTip_object:
-                    del self.ToolTip_object
-            else:
-                color = self.disabled_hover_color
-                if not self.ToolTip_object:
-                    x, y = pygame.mouse.get_pos()
-                    self.ToolTip_object = ToolTip(x, y, 450, 50, self.tooltip_text, font)
+        try:
+            if self.rect.collidepoint(mouse_pos):
+                if self.enabled:
+                    color = self.hover_color
+                    if self.ToolTip_object:
+                        del self.ToolTip_object
                 else:
-                    tool_tip = self.ToolTip_object
-        else:
-            if self.ToolTip_object:
-                    self.ToolTip_object = None
-                    tool_tip = None
-            if self.enabled:
-                color = self.color
-                
+                    color = self.disabled_hover_color
+                    if not self.ToolTip_object:
+                        x, y = pygame.mouse.get_pos()
+                        self.ToolTip_object = ToolTip(x, y, 450, 50, self.tooltip_text, font)
+                    else:
+                        tool_tip = self.ToolTip_object
             else:
-                color = self.disabled_color
+                if self.ToolTip_object:
+                        self.ToolTip_object = None
+                        tool_tip = None
+                if self.enabled:
+                    color = self.color
+                    
+                else:
+                    color = self.disabled_color
+        except Exception as e:
+            debug("Exception in button for tooltip: {e}")
 
         pygame.draw.rect(surface, color, self.rect, border_radius=8)
         text_surface = self.font.render(self.text, True, self.text_color)
@@ -457,9 +587,10 @@ class Button:
 
     def clicked(self, event):
         return (
-            event.type == pygame.MOUSEBUTTONDOWN
+            self.enabled
+            and event.type == pygame.MOUSEBUTTONDOWN
             and event.button == 1
-            and self.rest.collidepoint(event.pos)
+            and self.rect.collidepoint(event.pos)
         )
 
 class ToolTip:
@@ -484,6 +615,53 @@ class ToolTip:
         surface.blit(text_surface, text_rect)
 
     
+class TextWidget:
+
+    def __init__(self, x, y, text, font):
+        self.visible = True
+        self.x = x
+        self.y = y
+        self.text = text
+        self.font = font
+        self.text_color = (255, 255, 255)
+        self.anim_time = 0
+        self.animation_state = None
+        self.scale = 1
+        self.destroy_time = None
+    
+    def draw(self, screen):
+        if self.visible:
+            self.text_surface = self.font.render(self.text, True, self.text_color)
+            self.rect = self.text_surface.get_rect(center =(400,300))
+            self.rect.width *= self.scale
+            self.rect.height *= self.scale
+            self.text_surface = pygame.transform.smoothscale(self.text_surface,(self.rect.width,self.rect.height))
+            screen.blit(self.text_surface,(self.x,self.y))
+
+    def animate(self, animation=None):
+
+        if animation is not None:
+            self.animation_state = animation
+            animations.append(self)
+            self.anim_time = 0
+
+        match self.animation_state:
+            case "bounce":
+                self.anim_time += 0.1
+                self.scale = bounce(self.anim_time)
+                if self.anim_time > 2:
+                    animations.remove(self)
+                    self.animation_state = None
+                    self.anim_time = 0
+            case "overshoot_invis":
+                self.anim_time += 0.1
+                self.scale = overshoot(self.anim_time)
+                if self.anim_time > 2:
+                    animations.remove(self)
+                    self.animation_state = None
+                    self.anim_time = 0
+                    self.visible = False
+
 ################### MAIN ##################
 
 generate_tiles()
@@ -494,37 +672,108 @@ ui = UserInterface()
 ui.reset_death_progress()
    
 while running: # Game loop
-     
-    # Game loop basics
-    screen.fill(BLACK)
-    tiles_group.draw(screen)
-    screen.blit(character.image, character.rect)
-    ui.draw_user_interface()
-
-    # Handles debug messages
-    for index, debug_message in enumerate(debug_messages):
-        if time.time() < debug_message["expire_time"]:
-            surface = font.render(debug_message["text"], True, (255,255,255))
-            screen.blit(surface, (debug_message["x"], debug_message["y"] + (25 * index)))
-        else:
-            debug_messages.remove(debug_message)
 
     # Handles pygame events
     for event in pygame.event.get():
         if event.type == pygame.QUIT: # Handles player clicking exit 
             running = False
 
+        if event.type == pygame.KEYDOWN: #toggle debug messages
+            if event.key == pygame.K_m:
+                show_debug = not show_debug
 
-    # Handles animnation events
-    for target in animations[:]:
-        target.animate()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            for button in [ui.construct_reactor_button,ui.relocate_button,ui.recycle_tullium_button]:
+                if button.clicked(event):
+                    match (str(button.text)).lower():
+                        case "relocate":
+                            debug(f"{button.text} pressed")
+                            ui.update_count("uranium", ui.uranium_count - 5)
+                            relocate()
+                        case "recycle tullium":
+                            debug(f"{button.text} pressed")
+                            ui.update_count("tullium", ui.tullium_count - 10)
+                            ui.reset_death_progress()
+                            splash = TextWidget(SCREEN_WIDTH/2 - 500, SCREEN_HEIGHT/2 - 25, "        Tullium Recycled!\nEnergy Reserves at fully capacity!", pause_font)
+                            splash.animate("bounce")
+                            splash.destroy_time = time.time() + 2
+                            misc_draw.append(splash)
+                        case "construct reactor": #effectively the game win state!!!!!!!!!!!!
+                            debug(f"{button.text} pressed")
+                            ui.reset_death_progress()
+                            pause = True
+                            pause_text = "          Reactor Constructed!\nEnergy Reserves will no longer deplete!\n\n               Game Won"
+                            restart_button = Button(SCREEN_WIDTH/2-80, SCREEN_HEIGHT/2+200, 160, 50, "Restart", font, "Restart the game and all game variables")
+                            restart_button.color = (50,50,50)
+                            restart_button.hover_color = (80,80,80)
 
-    # Character
-    character.move(tiles_group)
-    character.interact()
-    # Checks if the character cooldown timer is active, if so- it updates the character_progress_bar object
-    if cooldown_timer.check_timer():
-        character_progress_bar.update(character.rect.centerx, character.rect.top - 10, 1 - cooldown_timer.get_percent()) #sets x, y, and percent using variables from the character and the cooldown timer
+            if restart_button is not None:           
+                if restart_button.clicked(event):
+                    debug(f"{button.text} pressed")
+                    relocate()
+                    ui.reset_death_progress()
+                    ui.tullium_count = 0
+                    ui.uranium_count = 0
+                    ui.tullium_count_widget.text = "0"
+                    ui.uranium_count_widget.text = "0"
+                    restart_button = None
+                    pause = False
+
+    if not pause: # Hanndles unpaised game loop operations 
+
+        # Game loop basics
+        screen.fill(BLACK)
+        tiles_group.draw(screen)
+        screen.blit(character.image, character.rect)
+        ui.draw_user_interface()
+
+        # Handles debug messages
+        if show_debug == True:
+            for index, debug_message in enumerate(debug_messages):
+                if time.time() < debug_message["expire_time"]:
+                    surface = font.render(debug_message["text"], True, (255,255,255))
+                    screen.blit(surface, (debug_message["x"], debug_message["y"] + (25 * index)))
+                else:
+                    debug_messages.remove(debug_message)
+
+        # Handles animation events
+        for target in animations[:]:
+            target.animate()
+
+        # Character
+        character.move(tiles_group)
+        character.interact()
+        # Checks if the character cooldown timer is active, if so- it updates the character_progress_bar object
+        if cooldown_timer.check_timer():
+            character_progress_bar.update(character.rect.centerx, character.rect.top - 10, 1 - cooldown_timer.get_percent()) #sets x, y, and percent using variables from the character and the cooldown timer
+
+        if death_time is not None:
+            if death_time <= time.time():
+                pause = True
+                pause_text = "Energy Reserves Depleted! Game Lost"
+                restart_button = Button(SCREEN_WIDTH/2-80, SCREEN_HEIGHT/2+100, 160, 50, "Restart", font, "Restart the game and all game variables")
+                restart_button.color = (50,50,50)
+                restart_button.hover_color = (80,80,80)
+    else:
+        screen.fill(GRAY)
+        pause_surface = pause_font.render(pause_text, True, (255,255,255))
+        pause_rect = pause_surface.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+        screen.blit(pause_surface,pause_rect)
+        if restart_button is not None:
+            restart_button.draw(screen)
+
+    # misc draw - draws any remaining misc items that can be drawn anonymously, uses try and except if the function attempted fails (generic draw)
+    for misc in misc_draw[:]:
+        try:
+            if misc.destroy_time is not None:
+                if time.time() > misc.destroy_time:
+                    misc_draw.remove(misc)
+                    continue
+
+            misc.draw(screen)
+
+        except Exception:
+            misc_draw.remove(misc)
 
     pygame.display.flip()
 
