@@ -1,6 +1,17 @@
 # Name: Jackson Knapp
 # Date: 5/11/26
-# Description: 
+# Description: A game about constructing a reactor to maintain your-power reserves. It is a remake-redo of a game I had to create for a previous game class in scratch.
+
+# m key = toggle debug
+# w a s d = movement keys
+# space = interact with tile
+# and use the mouse to interact with buttons on the screen
+
+# I tried to keep a lot of things generic and really remember able. Like all of the classes have a draw() function that is called from somewhere else in order to draw the pygame rectangles and text render objects to a surface that is passed in- the screen
+# Take a look at the animation functions i did- i found the curves for the animations online. They just use time (not delta time yet) and various mathematic functions to create a simple scale/size curve that changes when it moves through by incrementing an object's anim_time
+# The animations are updated each frame from within the main loop. Other than that all of the stuff for the animations happens within the objects.
+# Also the debug is cool. Using time.time() seems to be a great method for standardizing fadings, animations, queues, and a bunch of other stuff. Less so than delta-time but pretty close.
+#
 
 # imports
 import sys
@@ -12,7 +23,7 @@ from pathlib import Path
 
 # functions
 
-def debug(text, duration=2, x_pos=10, y_pos=10):
+def debug(text, duration=2, x_pos=10, y_pos=10): # a C00L system for debugging stuff. This creates an entry into an array that contains some rudamentary information for a debug task.
 
     debug_expire_time = time.time() + duration
 
@@ -37,13 +48,13 @@ def load_directory(): #function to load data from a directory, handles file not 
         print(f"Error: {e}")
         return None
     
-def generate_tiles():
+def generate_tiles(): #generates the tiles for the terrain.
 
     global tiles_group
     tile_options = list(TILE_TYPES.keys())
 
-    for r in range(TILES_X):
-        for c in range(TILES_Y):
+    for r in range(TILES_X): # Row
+        for c in range(TILES_Y): # Column
             x = TILES_START_X + (c * (TILE_SIZE + TILE_SPACING))
             y = TILES_START_Y + (r * (TILE_SIZE + TILE_SPACING))
 
@@ -52,7 +63,7 @@ def generate_tiles():
             tile.set_image(unknown_tile)
             tiles_group.add(tile)
 
-def spawn_character():
+def spawn_character(): #creates the character (Duh)
 
     global character
 
@@ -63,19 +74,19 @@ def spawn_character():
     local_char.set_image(char)
     return local_char
 
-def detect_sprite_overlap(sprite_group, test_location):
+def detect_sprite_overlap(sprite_group, test_location): #used to find if a given location overlaps any of the tile locations in the tiles_group
 
     sprites = sprite_group.sprites()
 
     found_sprites = pygame.sprite.Group()
     
-    for sprite in sprites:
+    for sprite in sprites: #tests if sprites are collideable
         if sprite.rect.collidepoint(test_location) and sprite.collision is True:
             found_sprites.add(sprite)
 
     return found_sprites
 
-def get_adjacent_tiles(Tile):
+def get_adjacent_tiles(Tile): #searches through the tiles_group for adjacent tiles to the inputted one.
 
     global TILE_SIZE
     global TILE_SPACING
@@ -100,17 +111,17 @@ def ease_out(anim_time): #animation curve
     curve = 1 -(1 - alpha) ** 2
     return curve
 
-def overshoot(anim_time):
+def overshoot(anim_time): #animation curve
     alpha = min(anim_time,1)
     curve = (1 + 4 * alpha) * ((1 - alpha) ** 2)
     return curve
     
-def bounce(anim_time):
+def bounce(anim_time):#animation curve
     alpha = min(anim_time,1)
     curve = 1 + (math.sin(alpha * math.pi * 3) * (1 - alpha) * .5)
     return curve
 
-def relocate(splash=True):
+def relocate(splash=True): #resets the terrain, moves the character to the spawn position, and removes resources from the inventory (cost of relcation)
 
     global pause
     global pause_text
@@ -139,7 +150,6 @@ def relocate(splash=True):
         splash.animate("bounce")
         splash.destroy_time = time.time() + 1
         misc_draw.append(splash)
-
 
 # pygame settings/init
 
@@ -203,7 +213,7 @@ GREEN = (0, 200, 80)
 
 # classes
 
-class Tile(pygame.sprite.Sprite):
+class Tile(pygame.sprite.Sprite): # A tile class for the terrain. Holds individual tile information and collides with the character.
 
     def __init__(self, x, y, size): #Constructor overrides Sprite class's constructor
         super().__init__() #initializes parent sprite
@@ -259,7 +269,7 @@ class Tile(pygame.sprite.Sprite):
         self.image = pygame.transform.smoothscale(self.original_image,(int(self.size), int(self.size)))
         self.rect = self.image.get_rect(center = center)
       
-class Character(pygame.sprite.Sprite):
+class Character(pygame.sprite.Sprite): # the character object. 
 
     last_key = None
     global tiles_group
@@ -358,7 +368,7 @@ class Character(pygame.sprite.Sprite):
                         case "uranium":
                             ui.update_count("uranium",ui.uranium_count + 1)
 
-class Timer:
+class Timer: # a timer class that serves as the basis for the progress bar class. Not used very much but could be implemented further as a way to isolate objects from the main loop.
 
     def __init__(self, duration=3): #Constructor
         self.duration = duration
@@ -389,7 +399,7 @@ class Timer:
 
         return self.running
 
-class ProgressBar(Timer):
+class ProgressBar(Timer): # a class for representing a progress bar for UI elements
 
     def __init__(self, surface, x=0, y=0, width=50, height=5, duration=0, color=(100,100,100)):
         super().__init__() #initializes parent timer
@@ -435,7 +445,7 @@ class ProgressBar(Timer):
         fill = int(self.width * self.percent)
         pygame.draw.rect(self.surface, self.color, (self.x - self.width/2, self.y - self.height/2, fill, self.height)) #fill
 
-class UserInterface:
+class UserInterface: # class for the user interface as a whole. Contains all of the UI elements and buttons.
 
     def __init__(self):
         self.death_progress = ProgressBar(screen,640,22,735,26,DEATH_SPEED,(150,150,150)) #sets death_progress bar settings
@@ -508,9 +518,10 @@ class UserInterface:
                 else:
                     self.tullium_count_adjust_widget.text = f"-{self.tullium_count - self.old_tullium_count}"
                     self.tullium_count_adjust_widget.text_color = (200,0,0)
+                
+                self.recycle_tullium_button.enabled = (self.tullium_count >= 10)
+                
 
-                if self.tullium_count >= 10:
-                    self.recycle_tullium_button.enabled = True
 
             case "uranium":
                 self.old_uranium_count = self.uranium_count
@@ -533,10 +544,9 @@ class UserInterface:
                     self.construct_reactor_button.enabled = True
                     self.relocate_button.enabled = False
 
-
-class Button:
+class Button: # a button class that has text overlayed onto the button. Has a disabled color, hover color, default color, and a disabled mode.
      
-    def __init__(self, x, y, width, height, text, font, tooltip_text):
+    def __init__(self, x, y, width, height, text, font, tooltip_text): #constructor
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
         self.tooltip_text = tooltip_text
@@ -556,11 +566,11 @@ class Button:
         global tool_tip
 
         try:
-            if self.rect.collidepoint(mouse_pos):
+            if self.rect.collidepoint(mouse_pos): #detects if the mouse is hovering over the button, changes color based on the state of the button
                 if self.enabled:
                     color = self.hover_color
                     if self.ToolTip_object:
-                        del self.ToolTip_object
+                        self.ToolTip_object = None
                 else:
                     color = self.disabled_hover_color
                     if not self.ToolTip_object:
@@ -580,12 +590,13 @@ class Button:
         except Exception as e:
             debug("Exception in button for tooltip: {e}")
 
+        # draw the button
         pygame.draw.rect(surface, color, self.rect, border_radius=8)
         text_surface = self.font.render(self.text, True, self.text_color)
         text_rect = text_surface.get_rect(center=self.rect.center)
         surface.blit(text_surface, text_rect)
 
-    def clicked(self, event):
+    def clicked(self, event): #pygame clicked event
         return (
             self.enabled
             and event.type == pygame.MOUSEBUTTONDOWN
@@ -593,7 +604,7 @@ class Button:
             and self.rect.collidepoint(event.pos)
         )
 
-class ToolTip:
+class ToolTip: # a tooltip class that is used when hovering a button for extra context
 
     def __init__(self, x, y, width, height, text, font):
         self.rect = pygame.Rect(x, y, width, height)
@@ -613,9 +624,8 @@ class ToolTip:
         text_surface = self.font.render(self.text, True, self.text_color)
         text_rect = text_surface.get_rect(center=self.rect.center)
         surface.blit(text_surface, text_rect)
-
     
-class TextWidget:
+class TextWidget: # as standalone text widget for displaying text and only text to the screen
 
     def __init__(self, x, y, text, font):
         self.visible = True
@@ -682,14 +692,15 @@ while running: # Game loop
             if event.key == pygame.K_m:
                 show_debug = not show_debug
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            for button in [ui.construct_reactor_button,ui.relocate_button,ui.recycle_tullium_button]:
+        if event.type == pygame.MOUSEBUTTONDOWN: # mouse button down events (LMB)
+            for button in [ui.construct_reactor_button,ui.relocate_button,ui.recycle_tullium_button]: #loops through all of the buttons present in the ui object and looks to see if they have flagged a pygame event
                 if button.clicked(event):
                     match (str(button.text)).lower():
                         case "relocate":
                             debug(f"{button.text} pressed")
                             ui.update_count("uranium", ui.uranium_count - 5)
-                            relocate()
+                            relocate(True)
+
                         case "recycle tullium":
                             debug(f"{button.text} pressed")
                             ui.update_count("tullium", ui.tullium_count - 10)
@@ -698,6 +709,7 @@ while running: # Game loop
                             splash.animate("bounce")
                             splash.destroy_time = time.time() + 2
                             misc_draw.append(splash)
+
                         case "construct reactor": #effectively the game win state!!!!!!!!!!!!
                             debug(f"{button.text} pressed")
                             ui.reset_death_progress()
@@ -730,7 +742,7 @@ while running: # Game loop
         # Handles debug messages
         if show_debug == True:
             for index, debug_message in enumerate(debug_messages):
-                if time.time() < debug_message["expire_time"]:
+                if time.time() < debug_message["expire_time"]: #if the expire time saved within the debug message is not yet passed, draw it, otherwise remove it from the debug_messages array
                     surface = font.render(debug_message["text"], True, (255,255,255))
                     screen.blit(surface, (debug_message["x"], debug_message["y"] + (25 * index)))
                 else:
@@ -747,7 +759,7 @@ while running: # Game loop
         if cooldown_timer.check_timer():
             character_progress_bar.update(character.rect.centerx, character.rect.top - 10, 1 - cooldown_timer.get_percent()) #sets x, y, and percent using variables from the character and the cooldown timer
 
-        if death_time is not None:
+        if death_time is not None: # if the death_time has arrived, pause the game and ask the player to restart (game lose state)
             if death_time <= time.time():
                 pause = True
                 pause_text = "Energy Reserves Depleted! Game Lost"
@@ -762,7 +774,7 @@ while running: # Game loop
         if restart_button is not None:
             restart_button.draw(screen)
 
-    # misc draw - draws any remaining misc items that can be drawn anonymously, uses try and except if the function attempted fails (generic draw)
+    # misc draw - draws any remaining misc items that can be drawn anonymously, uses try and except if the function attempted fails (generic draw() function)
     for misc in misc_draw[:]:
         try:
             if misc.destroy_time is not None:
